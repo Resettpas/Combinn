@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="app-title">Combinxeva | AI Style Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #6366f1;
+  --primary-hover: #4f46e5;
+  --bg-color: #0f172a;
+  --card-bg: #1e293b;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --border: #334155;
+  --accent: #10b981;
+  --warning: #f59e0b;
+}
+body { font-family: 'Plus Jakarta Sans', sans-serif; margin:0; padding:0; background: var(--bg-color); color: var(--text-main); }
+header { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-bottom: 1px solid var(--border); color:white; text-align:center; padding:20px; font-size:22px; font-weight: 700; position:relative; letter-spacing: 0.5px; }
+.settings-btn { position: absolute; right: 20px; top: 20px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 50%; width: 40px; height: 40px; color: white; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+.settings-btn:hover { background: rgba(255,255,255,0.1); }
+.settings-menu { display: none; position: absolute; top: 70px; right: 20px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0px 10px 25px rgba(0,0,0,0.3); z-index: 1000; overflow: hidden; width: 180px; }
+.settings-menu button { display: block; width: 100%; text-align: left; padding: 12px 15px; border: none; background: none; cursor: pointer; color: var(--text-main); font-size: 14px; transition: 0.2s; }
+.settings-menu button:hover { background: rgba(99, 102, 241, 0.15); color: var(--primary); }
+.container { width:92%; max-width:900px; margin:20px auto; background:var(--card-bg); border: 1px solid var(--border); padding:25px; border-radius:16px; box-shadow:0px 10px 30px rgba(0,0,0,0.2); }
+h2 { margin-top:0; color:var(--text-main); font-size:1.1em; font-weight: 600; border-bottom: 2px solid var(--primary); padding-bottom: 8px; display: inline-block; }
+.section { margin-bottom:25px; padding-bottom:20px; border-bottom:1px solid var(--border); }
+label { font-weight:500; display:block; margin:10px 0 5px; font-size:0.85em; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+select, input[type="text"] { padding:10px 12px; margin:4px 0; border-radius:8px; border:1px solid var(--border); width:100%; box-sizing: border-box; background: #0f172a; color: white; font-size: 14px; outline: none; transition: 0.2s; }
+select:focus, input[type="text"]:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); }
+.custom-color-picker { display: inline-block; width: 36px; height: 26px; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; }
+.custom-color-picker-wrapper { position: relative; display: inline-block; vertical-align: middle; margin-right: 5px; }
+button.primary-action { background:var(--primary); color:white; border:none; padding:10px 18px; border-radius:8px; cursor:pointer; font-size:14px; font-weight: 600; margin-top:10px; transition: 0.2s; width: 100%; }
+button.primary-action:hover { background:var(--primary-hover); transform: translateY(-1px); }
+ul { padding-left:0; list-style:none; }
+ul li { margin:8px 0; padding:10px 14px; background:#0f172a; border: 1px solid var(--border); border-radius:8px; display:flex; justify-content:space-between; align-items:center; font-size:0.9em;}
+.delete-btn { background: transparent; border: none; color: #ef4444; font-weight: bold; font-size: 18px; cursor: pointer; padding: 2px 8px; border-radius: 4px; transition: 0.2s; }
+.delete-btn:hover { background-color: rgba(239, 68, 68, 0.15); }
+.flex-row { display: flex; flex-direction: column; gap: 20px; }
+@media (min-width: 768px) {
+  .flex-row { flex-direction: row; }
+  .flex-column.profil-bilgileri { flex: 1; }
+  .flex-column.kayitli-profiller { flex: 1; }
+}
+#profileList { width: 100%; }
+#addItemBtn { margin-top:10px; width: auto; background: var(--accent); }
+#addItemBtn:hover { background: #059669; }
+#addItemSection { margin-top:15px; display:none; background: rgba(15, 23, 42, 0.5); padding: 15px; border-radius: 10px; border: 1px dashed var(--border); }
+#addItemWardrobeList { max-height:180px; overflow-y:auto; margin-top:10px; padding-left:0; }
+.pool-item { border: 1px solid var(--border); padding: 12px; margin-bottom: 10px; border-radius: 10px; background-color: #0f172a; }
+.pool-top { display: flex; align-items: center; gap: 12px; font-weight: 500; }
+.pool-top input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; }
+.color-container { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); }
+.color-container input[type="color"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.color-container button.addColorBtn { width: 30px; height: 30px; padding: 0; font-size: 18px; line-height: 1; display: flex; justify-content: center; align-items: center; border-radius: 50%; background: var(--border); border: none; color: white; cursor: pointer; }
+.color-container button.addColorBtn:hover { background: var(--primary); }
+.analysis-box { padding: 14px 16px; background: rgba(99, 102, 241, 0.1); border-left: 4px solid var(--primary); border-radius: 8px; margin-bottom: 15px; line-height: 1.5; font-size: 0.9em; color: #e2e8f0; }
+.outfit-card-wrapper { background: #0f172a; border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+.outfit-result-card { font-size: 1.05em; font-weight: 700; color: var(--accent); letter-spacing: 0.5px; text-align: center; margin-bottom: 8px; }
+.outfit-warning-note { font-size: 0.85em; color: var(--warning); background: rgba(245, 158, 11, 0.1); border-left: 3px solid var(--warning); padding: 8px 12px; border-radius: 6px; margin-top: 8px; line-height: 1.4; }
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 1000; display: flex; justify-content: center; align-items: center; }
+.modal-content { background: var(--card-bg); border: 1px solid var(--border); padding: 30px; border-radius: 16px; text-align: center; width: 90%; max-width: 400px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); }
+.lang-buttons button { margin: 6px; padding: 12px 24px; font-size: 15px; font-weight: 600; border-radius: 8px; background: var(--primary); color: white; border: none; cursor: pointer; width: 100%; transition: 0.2s; }
+.lang-buttons button:hover { background: var(--primary-hover); }
+#profileNameModal .modal-content, #licenseModal .modal-content { text-align: left; }
+#profileNameModal input, #licenseModal input { width: 100%; box-sizing: border-box; margin-top: 8px; margin-bottom: 20px; }
+#profileNameModal .modal-buttons, #licenseModal .modal-buttons { text-align: right; display: flex; gap: 10px; }
+#profileNameModal .modal-buttons button, #licenseModal .modal-buttons button { flex: 1; margin: 0; }
+</style>
+</head>
+<body>
+
+<!-- LİSANS KİLİT MODALI -->
+<div id="licenseModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <h2 id="license-modal-heading" style="display:block; margin-bottom:15px; border:none;">Activate Combinxeva</h2>
+        <label for="licenseInput" id="license-label">Enter your license key:</label>
+        <input type="text" id="licenseInput" placeholder="Ex: CMB-XXXX-XXXX">
+        <div class="modal-buttons">
+            <button onclick="verifyLicense()" class="primary-action" id="verifyLicenseBtn" style="margin:0;">Activate</button>
+        </div>
+    </div>
+</div>
+
+<div id="langModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <h2 id="lang-modal-title" style="display:block; margin-bottom:20px; border:none;">Select language</h2>
+        <div class="lang-buttons">
+            <button onclick="setLanguage('tr')">Türkçe</button>
+            <button onclick="setLanguage('en')">English</button>
+            <button onclick="setLanguage('de')">Deutsch</button>
+        </div>
+    </div>
+</div>
+<div id="profileNameModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <h2 id="profile-modal-heading" style="display:block; margin-bottom:15px; border:none;">Profile Save</h2>
+        <label for="profileInput" id="profile-name-label">Enter profile name:</label>
+        <input type="text" id="profileInput" placeholder="Ex: My Style">
+        <div class="modal-buttons">
+            <button onclick="cancelProfileSave()" class="primary-action" style="background:#475569;" id="cancelSaveBtn">Cancel</button>
+            <button onclick="confirmProfileSave()" class="primary-action" id="confirmSaveBtn">Save</button>
+        </div>
+    </div>
+</div>
+<header>
+  <span id="header-title">Combinxeva | AI Style Assistant</span>
+  <button class="settings-btn" onclick="toggleSettingsMenu()">⚙️</button>
+  <div id="settingsMenu" class="settings-menu">
+    <button id="clearProfilesBtn" onclick="clearProfiles()">Clear All Profiles</button>
+    <button id="changeLangBtn" onclick="showLangModal()">Language / Dil</button>
+  </div>
+</header>
+<div class="container">
+<div class="section flex-row">
+  <div class="flex-column profil-bilgileri">
+    <h2 id="profile-info-heading">Profile Information</h2>
+    <label id="ten-label">Skin Color:</label>
+    <select id="ten"><option value="">Select</option></select>
+    <label id="sac-label">Hair Color:</label>
+    <select id="sac"><option value="">Select</option></select>
+    <label id="boy-label">Height:</label>
+    <select id="boy"><option value="">Select</option></select>
+  </div>
+  <div class="flex-column kayitli-profiller">
+    <h2 id="saved-profiles-heading">Saved Profiles</h2>
+    <select id="profileList"><option value="">Select</option></select>
+    <button onclick="toggleAddItemSection()" id="addItemBtn" class="primary-action" style="display:none;">+ Add Item to Wardrobe</button>
+    <div class="new-item" id="addItemSection">
+      <label id="item-category-label">Category:</label>
+      <select id="itemCategory">
+        <option value="">Select</option>
+        <option>Üst - Tişört</option><option>Üst - Gömlek</option><option>Üst - Kazak</option><option>Üst - Krop</option>
+        <option>Dış Giyim - Mont</option><option>Dış Giyim - Ceket</option>
+        <option>Alt - Jean</option><option>Alt - Pantolon</option><option>Alt - Etek</option><option>Alt - Şort</option>
+        <option>Elbise</option>
+        <option>Ayakkabı - Spor</option><option>Ayakkabı - Topuklu</option><option>Ayakkabı - Bot</option>
+        <option>Aksesuar - Saat</option><option>Aksesuar - Kolye</option><option>Aksesuar - Bilezik</option><option>Aksesuar - Küpe</option><option>Aksesuar - Çanta</option><option>Aksesuar - Şapka</option>
+      </select>
+      <label id="item-color-label">Color:</label>
+      <input type="color" id="itemColor" value="#000000" style="width:100%; height:40px; border-radius:8px; border:1px solid var(--border); cursor:pointer; background:none;">
+      <button onclick="addNewItem()" id="addItemToListBtn" class="primary-action">Add to List</button>
+      <ul id="addItemWardrobeList"></ul>
+    </div>
+  </div>
+</div>
+  <div class="section">
+<h2 id="product-pool-heading">Quick Product Pool</h2>
+<div id="productPool"></div>
+</div>
+<div class="section">
+<h2 id="wardrobe-heading">Wardrobe</h2>
+<ul id="wardrobeList"></ul>
+<button onclick="showSaveProfileModal()" id="saveProfileBtn" class="primary-action" style="background:var(--accent);">Save Profile & Wardrobe</button>
+</div>
+<div class="section">
+<h2 id="suggestion-heading">Smart Outfit Generator</h2>
+<label id="weather-label">Weather:</label>
+<select id="hava">
+  <option value="">Select</option>
+</select>
+<label id="destination-label">Destination:</label>
+<select id="gun">
+  <option value="">Select</option>
+</select>
+<button onclick="kombinOner()" class="primary-action" id="suggestBtn" style="font-size:16px; padding:12px;">✨ Generate Outfit</button>
+<div id="sonuc" style="margin-top:20px;"></div>
+</div>
+<script>
+let wardrobe = [];
+let profiles = {};
+let currentLang = localStorage.getItem('lang') || 'en';
+
+// Lisans Kontrolü: Tarayıcıda lisans kayıtlı mı kontrol ediyoruz
+function checkLicense() {
+    const isLicensed = localStorage.getItem('combinxeva_pro') === 'true';
+    if (!isLicensed) {
+        document.getElementById('licenseModal').style.display = 'flex';
+    }
+}
+
+function verifyLicense() {
+    const key = document.getElementById('licenseInput').value.trim();
+    // Örnek basit lisans kuralı veya Lemon Squeezy'den aldığın anahtar formatı kontrolü
+    if (key.length >= 6) {
+        localStorage.setItem('combinxeva_pro', 'true');
+        document.getElementById('licenseModal').style.display = 'none';
+        alert(currentLang === 'tr' ? 'Lisans başarıyla doğrulandı! Hoş geldiniz.' : 'License successfully verified! Welcome.');
+    } else {
+        alert(currentLang === 'tr' ? 'Geçersiz lisans anahtarı!' : 'Invalid license key!');
+    }
+}
+
+const translations = {
+    'tr': {
+        'title': 'Combinxeva | AI Style Assistant', 'settings': 'Ayarlar', 'clear_profiles': 'Tüm Profilleri Sil', 'change_lang': 'Dil / Language', 'select_lang_title': 'Lütfen bir dil seçin',
+        'profile_info': 'Profil Bilgileri', 'skin_color': 'Ten Rengi:', 'hair_color': 'Saç Rengi:', 'height': 'Boy:', 'saved_profiles': 'Kayıtlı Profiller',
+        'add_item_btn': '+ Dolabına Ürün Ekle', 'category_label': 'Kategori:', 'color_label': 'Renk:', 'add_item_to_list_btn': 'Listeye Ekle',
+        'product_pool': 'Hızlı Ürün Havuzu', 'wardrobe': 'Gardırobunuz', 'save_profile': 'Profilimi ve Dolabımı Kaydet', 'suggestion_heading': 'Akıllı Kombin Üreteci',
+        'weather': 'Hava Sıcaklığı:', 'destination': 'Bugün Nereye Gidiyorsunuz?', 'suggest_btn': '✨ Kombin Üret',
+        'select_one': 'Seçiniz', 'alert_category': 'Lütfen bir kategori seçin.', 'alert_color': 'Lütfen geçerli bir renk seçin.',
+        'alert_already_exists': 'Bu parça zaten gardırobunuzda kayıtlı.', 'alert_profile_saved': 'profil başarıyla kaydedildi!',
+        'alert_no_destination': 'Lütfen rotanızı (nereye gideceğinizi) seçin.', 'alert_no_weather': 'Lütfen hava koşulunu seçin.',
+        'alert_no_items': 'Gardırobunuzda en az birer adet Üst (veya Elbise), Alt parça ve Ayakkabı bulunmalıdır!',
+        'no_suggestion_found': 'Seçtiğiniz kriterlere uygun, zorunlu temel bileşenleri içeren yeterli kombin üretilemedi. Gardırobunuzu zenginleştirin.',
+        'special_color': 'Özel Renk', 'alert_profile_cleared': 'Tüm kayıtlı profiller temizlendi.',
+        'empty_wardrobe': 'Gardırobunuz henüz boş. Yukarıdan parça ekleyin.',
+        'alternative': 'Alternatif',
+        'ten_options': ['Esmer', 'Kumral', 'Buğday', 'Beyaz'],
+        'sac_options': ['Siyah', 'Kahverengi', 'Sarı', 'Kızıl'],
+        'boy_options': ['150-160 cm', '160-170 cm', '170-180 cm', '180+ cm'],
+        'weather_options': ['Sıcak', 'Ilıman', 'Serin'],
+        'destination_options': ['Sevgili buluşması', 'Arkadaşlarla dışarı çıkma', 'Markete gitme', 'İş görüşmesi', 'Gece Eğlencesi'],
+        'profile_name_label': 'Profil adı giriniz:',
+        'cancel_save_btn': 'İptal',
+        'confirm_save_btn': 'Kaydet',
+        'alert_name_required': 'Lütfen geçerli bir profil adı girin.',
+        'license_modal_title': 'Combinxeva Aktivasyonu',
+        'license_label': 'Lisans anahtarınızı giriniz:',
+        'verify_btn': 'Aktive Et',
+        'analysis_templates': [
+            "Bugünkü rotan olan **{yer}** için stil sahibi, karizmatik ve ortamın enerjisine yüzde yüz uyum sağlayan bir konsept kurguladık.",
+            "**{yer}** etkinliğinde hem rahatlığından ödün vermeyecek hem de tarzınla tüm dikkatleri üzerine çekecek özel bir kombin hazırladık.",
+            "Gideceğin yer olan **{yer}** ortamının gerektirdiği imajı, gardırobundaki en nitelikli parçalarla harmanlayarak kusursuz bir denge kurduk.",
+            "Moda trendlerini ve **{yer}** konseptini göz önüne alarak, gün boyu kendini mükemmel hissedeceğin bu özel seçkiyi oluşturduk."
+        ],
+        'weather_notes': {
+            'Serin': " Havanın **serin** olması sebebiyle seni sıcak tutacak katmanlı parçalar ön plana çıkarıldı.",
+            'Sıcak': " Havanın **sıcak** seyretmesi nedeniyle ferah, nefes alabilen kumaşlar tercih edildi.",
+            'Ilıman': " Havanın **ılıman** dengesi sayesinde ne çok kalın ne de çok hafif, ideal bir konsept yakalandı.",
+            'Cool': " Havanın **serin** olması sebebiyle seni sıcak tutacak katmanlı parçalar ön plana çıkarıldı.",
+            'Hot': " Havanın **sıcak** seyretmesi nedeniyle ferah, nefes alabilen kumaşlar tercih edildi.",
+            'Mild': " Havanın **ılıman** dengesi sayesinde ne çok kalın ne de çok hafif, ideal bir konsept yakalandı.",
+            'Kühl': " Havanın **serin** olması sebebiyle seni sıcak tutacak katmanlı parçalar ön plana çıkarıldı.",
+            'Heiß': " Havanın **sıcak** seyretmesi nedeniyle ferah, nefes alabilen kumaşlar tercih edildi."
+        },
+        'warnings': {
+            'İş görüşmesi': "⚠️ **Stil Notu:** İş görüşmesinde bu tarz ayakkabı/parça çok resmi durmayabilir; bunun yerine şık bir bot veya topuklu/klasik ayakkabı tercih edilmesi önerilir.",
+            'Markete gitme': "⚠️ **Stil Notu:** Market gibi günlük ve rahat bir ortam için bu parça fazla iddialı olabilir; daha spor parçalar seçilmesi önerilir.",
+            'Job interview': "⚠️ **Style Note:** This type of item/shoe might look too casual for a job interview; switching to chic boots or heels/classic shoes is recommended.",
+            'Market': "⚠️ **Style Note:** This piece might feel a bit too ambitious for a casual and relaxed place like the market; opting for sportier items is recommended.",
+            'Vorstellungsgespräch': "⚠️ **Stil-Hinweis:** Dieser Artikel könnte für ein Vorstellungsgespräch zu casual wirken; schicke Stiefel oder Absatzschuhe werden empfohlen.",
+            'Markt': "⚠️ **Stil-Hinweis:** Für einen entspannten Ort wie den Markt könnte dies zu ambitioniert sein; sportlichere Artikel werden empfohlen.",
+            'default': "⚠️ **Stil Notu:** Bu konsept için gardırobunuzda daha uygun alternatifler bulundurmanız önerilir."
+        },
+        'category_tr': {
+            'Üst': 'Üst', 'Dış Giyim': 'Dış Giyim', 'Alt': 'Alt', 'Elbise': 'Elbise', 'Ayakkabı': 'Ayakkabı', 'Aksesuar': 'Aksesuar',
+            'Tişört': 'Tişört', 'Gömlek': 'Gömlek', 'Kazak': 'Kazak', 'Krop': 'Krop', 'Mont': 'Mont', 'Ceket': 'Ceket',
+            'Jean': 'Jean', 'Pantolon': 'Pantolon', 'Etek': 'Etek', 'Şort': 'Şort', 'Spor': 'Spor', 'Topuklu': 'Topuklu',
+            'Bot': 'Bot', 'Saat': 'Saat', 'Kolye': 'Kolye', 'Bilezik': 'Bilezik', 'Küpe': 'Küpe', 'Çanta': 'Çanta', 'Şapka': 'Şapka',
+        },
+        'colors_tr': {
+          "#000000": "Siyah", "#ffffff": "Beyaz", "#ff0000": "Kırmızı", "#00ff00": "Yeşil", "#0000ff": "Mavi",
+          "#ffff00": "Sarı", "#ffa500": "Turuncu", "#800080": "Mor", "#a52a2a": "Kahverengi", "#808080": "Gri",
+          "#c0c0c0": "Gümüş", "#daa520": "Altın", "#add8e6": "Açık Mavi", "#ffc0cb": "Pembe", "#90ee90": "Açık Yeşil"
+        }
+    },
+    'en': {
+        'title': 'Combinxeva | AI Style Assistant', 'settings': 'Settings', 'clear_profiles': 'Clear All', 'change_lang': 'Language / Dil', 'select_lang_title': 'Select language',
+        'profile_info': 'Profile Information', 'skin_color': 'Skin Color:', 'hair_color': 'Hair Color:', 'height': 'Height:', 'saved_profiles': 'Saved Profiles',
+        'add_item_btn': '+ Add Item to Wardrobe', 'category_label': 'Category:', 'color_label': 'Color:', 'add_item_to_list_btn': 'Add to List',
+        'product_pool': 'Quick Product Pool', 'wardrobe': 'Wardrobe', 'save_profile': 'Save Profile & Wardrobe', 'suggestion_heading': 'Smart Outfit Generator',
+        'weather': 'Weather:', 'destination': 'Destination:', 'suggest_btn': '✨ Generate Outfit',
+        'select_one': 'Select', 'alert_category': 'Please select a category.', 'alert_color': 'Please select a valid color.',
+        'alert_already_exists': 'This item is already in your wardrobe.', 'alert_profile_saved': 'profile successfully saved!',
+        'alert_no_destination': 'Please select your destination.', 'alert_no_weather': 'Please select weather conditions.',
+        'alert_no_items': 'Your wardrobe must contain at least one Top/Dress, Bottom, and Shoes!',
+        'no_suggestion_found': 'Not enough outfits could be generated with the required basic items. Enrich your wardrobe.',
+        'special_color': 'Custom', 'alert_profile_cleared': 'All saved profiles cleared.',
+        'empty_wardrobe': 'Your wardrobe is empty yet. Add items from above.',
+        'alternative': 'Alternative',
+        'ten_options': ['Dark', 'Brownish', 'Wheatish', 'Fair'],
+        'sac_options': ['Black', 'Brown', 'Blonde', 'Red'],
+        'boy_options': ['150-160 cm', '160-170 cm', '170-180 cm', '180+ cm'],
+        'weather_options': ['Hot', 'Mild', 'Cool'],
+        'destination_options': ['Date night', 'Going out with friends', 'Market', 'Job interview', 'Night out'],
+        'profile_name_label': 'Enter profile name:',
+        'cancel_save_btn': 'Cancel',
+        'confirm_save_btn': 'Save',
+        'alert_name_required': 'Please enter a valid profile name.',
+        'license_modal_title': 'Activate Combinxeva',
+        'license_label': 'Enter your license key:',
+        'verify_btn': 'Activate',
+        'analysis_templates': [
+            "We crafted a stylish, charismatic concept for your destination today: **{yer}**, perfectly matching the energy of the venue.",
+            "We prepared a special outfit for your **{yer}** event that ensures maximum comfort while turning heads.",
+            "We struck a flawless balance by harmonizing the image required by **{yer}** with the finest pieces in your wardrobe.",
+            "Considering fashion trends and the **{yer}** concept, we created this exclusive selection where you'll feel great all day."
+        ],
+        'weather_notes': {
+            'Cool': " Due to the **cool** weather, layered pieces keeping you warm were prioritized.",
+            'Hot': " Due to the **hot** weather, breezy and breathable fabrics were chosen.",
+            'Mild': " Thanks to the **mild** weather balance, an ideal concept neither too thick nor too light was achieved.",
+            'Serin': " Due to the **cool** weather, layered pieces keeping you warm were prioritized.",
+            'Sıcak': " Due to the **hot** weather, breezy and breathable fabrics were chosen.",
+            'Ilıman': " Thanks to the **mild** weather balance, an ideal concept neither too thick nor too light was achieved.",
+            'Kühl': " Due to the **cool** weather, layered pieces keeping you warm were prioritized.",
+            'Heiß': " Due to the **hot** weather, breezy and breathable fabrics were chosen."
+        },
+        'warnings': {
+            'Job interview': "⚠️ **Style Note:** This type of item/shoe might look too casual for a job interview; switching to chic boots or heels/classic shoes is recommended.",
+            'Market': "⚠️ **Style Note:** This piece might feel a bit too ambitious for a casual and relaxed place like the market; opting for sportier items is recommended.",
+            'İş görüşmesi': "⚠️ **Style Note:** This type of item/shoe might look too casual for a job interview; switching to chic boots or heels/classic shoes is recommended.",
+            'Markete gitme': "⚠️ **Style Note:** This piece might feel a bit too ambitious for a casual and relaxed place like the market; opting for sportier items is recommended.",
+            'Vorstellungsgespräch': "⚠️ **Style Note:** This type of item/shoe might look too casual for a job interview; switching to chic boots or heels/classic shoes is recommended.",
+            'Markt': "⚠️ **Style Note:** This piece might feel a bit too ambitious for a casual and relaxed place like the market; opting for sportier items is recommended.",
+            'default': "⚠️ **Style Note:** It is recommended to have more suitable alternatives in your wardrobe for this concept."
+        },
+        'category_en': { 'Üst': 'Top', 'Dış Giyim': 'Outerwear', 'Alt': 'Bottom', 'Elbise': 'Dress', 'Ayakkabı': 'Shoe', 'Aksesuar': 'Accessory', 'Tişört': 'T-Shirt', 'Gömlek': 'Shirt', 'Kazak': 'Sweater', 'Krop': 'Crop', 'Mont': 'Coat', 'Ceket': 'Jacket', 'Jean': 'Jeans', 'Pantolon': 'Pants', 'Etek': 'Skirt', 'Şort': 'Shorts', 'Spor': 'Sneakers', 'Topuklu': 'Heels', 'Bot': 'Boots', 'Saat': 'Watch', 'Kolye': 'Necklace', 'Bilezik': 'Bracelet', 'Küpe': 'Earrings', 'Çanta': 'Bag', 'Şapka': 'Hat' },
+        'colors_en': { "#000000": "Black", "#ffffff": "White", "#ff0000": "Red", "#00ff00": "Green", "#0000ff": "Blue", "#ffff00": "Yellow", "#ffa500": "Orange", "#800080": "Purple", "#a52a2a": "Brown", "#808080": "Gray" }
+    },
+    'de': {
+        'title': 'Combinxeva | AI Style Assistant', 'settings': 'Einstellungen', 'clear_profiles': 'Alle löschen', 'change_lang': 'Sprache / Dil', 'select_lang_title': 'Sprache wählen',
+        'profile_info': 'Profilinformationen', 'skin_color': 'Hautfarbe:', 'hair_color': 'Haarfarbe:', 'height': 'Größe:', 'saved_profiles': 'Gespeicherte Profile',
+        'add_item_btn': '+ Artikel hinzufügen', 'category_label': 'Kategorie:', 'color_label': 'Farbe:', 'add_item_to_list_btn': 'Zur Liste',
+        'product_pool': 'Produktpool', 'wardrobe': 'Garderobe', 'save_profile': 'Profil & Garderobe speichern', 'suggestion_heading': 'Outfit Generator',
+        'weather': 'Wetter:', 'destination': 'Ziel:', 'suggest_btn': '✨ Outfit generieren',
+        'select_one': 'Auswählen', 'alert_category': 'Kategorie wählen.', 'alert_color': 'Farbe wählen.',
+        'alert_already_exists': 'Bereits in der Garderobe.', 'alert_profile_saved': 'Gespeichert!',
+        'alert_no_destination': 'Ziel wählen.', 'alert_no_weather': 'Wetter wählen.',
+        'alert_no_items': 'Mindestens Oberteil/Kleid, Unterteil und Schuhe erforderlich!',
+        'no_suggestion_found': 'Nicht genügend passende Outfits gefunden. Erweitern Sie Ihre Garderobe.',
+        'special_color': 'Spezial', 'alert_profile_cleared': 'Gelöscht.',
+        'empty_wardrobe': 'Ihre Garderobe ist leer. Fügen Sie oben Artikel hinzu.',
+        'alternative': 'Alternative',
+        'ten_options': ['Dunkel', 'Bräunlich', 'Weizen', 'Hell'],
+        'sac_options': ['Schwarz', 'Braun', 'Blond', 'Rot'],
+        'boy_options': ['150-160 cm', '160-170 cm', '170-180 cm', '180+ cm'],
+        'weather_options': ['Heiß', 'Mild', 'Kühl'],
+        'destination_options': ['Verabredung', 'Freunde', 'Markt', 'Vorstellungsgespräch', 'Party'],
+        'profile_name_label': 'Name:', 'cancel_save_btn': 'Abbrechen', 'confirm_save_btn': 'Speichern', 'alert_name_required': 'Name erforderlich.',
+        'license_modal_title': 'Combinxeva aktivieren',
+        'license_label': 'Lizenzschlüssel eingeben:',
+        'verify_btn': 'Aktivieren',
+        'analysis_templates': [
+            "Für Ihr heutigen Ziel **{yer}** haben wir ein stilvolles, charismatisches Konzept entwickelt, das perfekt zur Energie des Ortes passt.",
+            "Wir haben ein spezielles Outfit für Ihr **{yer}**-Event vorbereitet, das maximalen Komfort bietet und alle Blicke auf sich zieht.",
+            "Wir haben eine perfekte Balance geschaffen, indem wir den für **{yer}** erforderlichen Look mit den besten Teilen Ihrer Garderobe harmonisiert haben.",
+            "Unter Berücksichtigung von Trends und dem **{yer}**-Konzept haben wir diese exklusive Auswahl erstellt, in der Sie sich den ganzen Tag wohlfühlen."
+        ],
+        'weather_notes': {
+            'Kühl': " Wegen des **kühlen** Wetters wurden wärmende Lagen bevorzugt.",
+            'Heiß': " Wegen des **heißen** Wetters wurden luftige Stoffe gewählt.",
+            'Mild': " Dank der **milden** Wetterlage wurde ein ideales Konzept gefunden.",
+            'Serin': " Wegen des **kühlen** Wetters wurden wärmende Lagen bevorzugt.",
+            'Sıcak': " Wegen des **heißen** Wetters wurden luftige Stoffe gewählt.",
+            'Ilıman': " Dank der **milden** Wetterlage wurde ein ideales Konzept gefunden.",
+            'Cool': " Wegen des **kühlen** Wetters wurden wärmende Lagen bevorzugt.",
+            'Hot': " Wegen des **heißen** Wetters wurden luftige Stoffe gewählt."
+        },
+        'warnings': {
+            'Vorstellungsgespräch': "⚠️ **Stil-Hinweis:** Dieser Artikel könnte für ein Vorstellungsgespräch zu casual wirken; schicke Stiefel oder Absatzschuhe werden empfohlen.",
+            'Markt': "⚠️ **Stil-Hinweis:** Für einen entspannten Ort wie den Markt könnte dies zu ambitioniert sein; sportlichere Artikel werden empfohlen.",
+            'İş görüşmesi': "⚠️ **Stil-Hinweis:** Dieser Artikel könnte für ein Vorstellungsgespräch zu casual wirken; schicke Stiefel oder Absatzschuhe werden empfohlen.",
+            'Markete gitme': "⚠️ **Stil-Hinweis:** Für einen entspannten Ort wie den Markt könnte dies zu ambitioniert sein; sportlichere Artikel werden empfohlen.",
+            'Job interview': "⚠️ **Stil-Hinweis:** Dieser Artikel könnte für ein Vorstellungsgespräch zu casual wirken; schicke Stiefel oder Absatzschuhe werden empfohlen.",
+            'Market': "⚠️ **Stil-Hinweis:** Für einen entspannten Ort wie den Markt könnte dies zu ambitioniert sein; sportlichere Artikel werden empfohlen.",
+            'default': "⚠️ **Stil-Hinweis:** Es wird empfohlen, passendere Alternativen in Ihrer Garderobe zu haben."
+        },
+        'category_de': { 'Üst': 'Oberteil', 'Dış Giyim': 'Oberbekleidung', 'Alt': 'Unterteil', 'Elbise': 'Kleid', 'Ayakkabı': 'Schuh', 'Aksesuar': 'Accessoire', 'Tişört': 'T-Shirt', 'Gömlek': 'Hemd', 'Kazak': 'Pullover', 'Krop': 'Crop-Top', 'Mont': 'Mantel', 'Ceket': 'Jacke', 'Jean': 'Jeans', 'Pantolon': 'Hose', 'Etek': 'Rock', 'Şort': 'Shorts', 'Spor': 'Sneakers', 'Topuklu': 'Absatzschuhe', 'Bot': 'Stiefel', 'Saat': 'Uhr', 'Kolye': 'Halskette', 'Bilezik': 'Armband', 'Küpe': 'Ohrringe', 'Çanta': 'Tasche', 'Şapka': 'Hut' },
+        'colors_de': { "#000000": "Schwarz", "#ffffff": "Weiß", "#ff0000": "Rot", "#00ff00": "Grün", "#0000ff": "Blau", "#ffff00": "Gelb", "#ffa500": "Orange", "#800080": "Lila", "#a52a2a": "Braun", "#808080": "Grau" }
+    }
+};
+
+function translateItem(item) {
+    const [category, subCategory] = item.split(' - ');
+    const t = translations[currentLang];
+    const langKey = `category_${currentLang}`;
+    const translatedCategory = t[langKey] && t[langKey][category] ? t[langKey][category] : category;
+    const translatedSubCategory = subCategory && t[langKey] && t[langKey][subCategory] ? t[langKey][subCategory] : subCategory;
+    return translatedSubCategory ? `${translatedCategory} - ${translatedSubCategory}` : translatedCategory;
+}
+
+function setLanguage(lang) {
+    currentLang = lang;
+    localStorage.setItem('lang', lang);
+    applyTranslations();
+    document.getElementById('langModal').style.display = 'none';
+    updateProfileList();
+    generateProductPool();
+    updateWardrobeList();
+    updateAddItemWardrobeList();
+    document.getElementById('sonuc').innerHTML = '';
+}
+
+function showLangModal() {
+    document.getElementById('lang-modal-title').textContent = translations[currentLang]['select_lang_title'];
+    document.getElementById('langModal').style.display = 'flex';
+    document.getElementById('settingsMenu').style.display = 'none';
+}
+
+function applyTranslations() {
+    const t = translations[currentLang];
+    document.getElementById('app-title').textContent = t.title;
+    document.getElementById('header-title').textContent = t.title;
+    document.getElementById('profile-info-heading').textContent = t.profile_info;
+    document.getElementById('ten-label').textContent = t.skin_color;
+    document.getElementById('sac-label').textContent = t.hair_color;
+    document.getElementById('boy-label').textContent = t.height;
+    document.getElementById('saved-profiles-heading').textContent = t.saved_profiles;
+    document.getElementById('addItemBtn').textContent = t.add_item_btn;
+    document.getElementById('item-category-label').textContent = t.category_label;
+    document.getElementById('item-color-label').textContent = t.color_label;
+    document.getElementById('addItemToListBtn').textContent = t.add_item_to_list_btn;
+    document.getElementById('product-pool-heading').textContent = t.product_pool;
+    document.getElementById('wardrobe-heading').textContent = t.wardrobe;
+    document.getElementById('saveProfileBtn').textContent = t.save_profile;
+    document.getElementById('suggestion-heading').textContent = t.suggestion_heading;
+    document.getElementById('weather-label').textContent = t.weather;
+    document.getElementById('destination-label').textContent = t.destination;
+    document.getElementById('suggestBtn').textContent = t.suggest_btn;
+    document.getElementById('clearProfilesBtn').textContent = t.clear_profiles;
+    document.getElementById('changeLangBtn').textContent = t.change_lang;
+    document.getElementById('profile-name-label').textContent = t.profile_name_label;
+    document.getElementById('cancelSaveBtn').textContent = t.cancel_save_btn;
+    document.getElementById('confirmSaveBtn').textContent = t.confirm_save_btn;
+    document.getElementById('license-modal-heading').textContent = t.license_modal_title;
+    document.getElementById('license-label').textContent = t.license_label;
+    document.getElementById('verifyLicenseBtn').textContent = t.verify_btn;
+
+    updateSelectOptions('ten', t.ten_options);
+    updateSelectOptions('sac', t.sac_options);
+    updateSelectOptions('boy', t.boy_options);
+    updateSelectOptions('hava', t.weather_options);
+    updateSelectOptions('gun', t.destination_options);
+}
+
+function updateSelectOptions(selectId, options) {
+    const selectEl = document.getElementById(selectId);
+    const currentVal = selectEl.value;
+    selectEl.innerHTML = `<option value="">${translations[currentLang].select_one}</option>`;
+    options.forEach(optionText => {
+        const option = document.createElement('option');
+        option.value = optionText;
+        option.textContent = optionText;
+        selectEl.appendChild(option);
+    });
+    selectEl.value = currentVal;
+}
+
+window.onload = () => {
+    applyTranslations();
+    checkLicense(); // Sayfa açıldığında lisans kontrolü tetiklenir
+    updateProfileList();
+    generateProductPool();
+    updateWardrobeList();
+    updateAddItemWardrobeList();
+};
+
+function toggleSettingsMenu() {
+    const menu = document.getElementById('settingsMenu');
+    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+}
+
+function clearProfiles() {
+    if (confirm(translations[currentLang].clear_profiles + '?')) {
+        profiles = {};
+        updateProfileList();
+        wardrobe = [];
+        updateWardrobeList();
+        syncPoolWithWardrobe();
+        document.getElementById('settingsMenu').style.display = 'none';
+        alert(translations[currentLang].alert_profile_cleared);
+    }
+}
+
+function getColorName(hex) {
+    const langKey = `colors_${currentLang}`;
+    const colorsMap = translations[currentLang][langKey] || translations['tr'].colors_tr;
+    return colorsMap[hex.toLowerCase()] || translations[currentLang].special_color;
+}
+
+const initialProducts = [
+  "Üst - Tişört","Üst - Gömlek","Üst - Kazak","Üst - Krop",
+  "Dış Giyim - Mont","Dış Giyim - Ceket",
+  "Alt - Jean","Alt - Pantolon","Alt - Etek","Alt - Şort",
+  "Elbise",
+  "Ayakkabı - Spor","Ayakkabı - Topuklu","Ayakkabı - Bot",
+  "Aksesuar - Saat","Aksesuar - Kolye","Aksesuar - Bilezik","Aksesuar - Küpe","Aksesuar - Çanta", "Aksesuar - Şapka"
+];
+
+function updateProfileList() {
+    const profileList = document.getElementById("profileList");
+    const currentVal = profileList.value;
+    profileList.innerHTML = `<option value="">${translations[currentLang].select_one}</option>`;
+    for (const name in profiles) {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        profileList.appendChild(option);
+    }
+    profileList.value = currentVal;
+    document.getElementById("addItemBtn").style.display = profileList.value ? "inline-block" : "none";
+}
+
+function toggleAddItemSection() {
+    const addItemSection = document.getElementById("addItemSection");
+    addItemSection.style.display = addItemSection.style.display === "none" ? "block" : "none";
+    if (addItemSection.style.display === "block") {
+        updateAddItemWardrobeList();
+    }
+}
+
+function addNewItem() {
+    const category = document.getElementById("itemCategory").value;
+    const color = document.getElementById("itemColor").value;
+    if (!category) return alert(translations[currentLang].alert_category);
+    if (!color) return alert(translations[currentLang].alert_color);
+    
+    if (!wardrobe.some(item => item.category === category && item.color === color)) {
+        wardrobe.push({ category: category, color: color });
+        updateWardrobeList();
+        updateAddItemWardrobeList();
+        syncPoolWithWardrobe();
+    } else {
+        alert(translations[currentLang].alert_already_exists);
+    }
+}
+
+function updateAddItemWardrobeList() {
+    const ul = document.getElementById("addItemWardrobeList");
+    ul.innerHTML = "";
+    wardrobe.forEach((item, index) => {
+        const colorName = getColorName(item.color);
+        const li = document.createElement("li");
+        
+        const leftWrap = document.createElement("div");
+        leftWrap.style.display = "flex";
+        leftWrap.style.alignItems = "center";
+        leftWrap.style.gap = "8px";
+        
+        const colorBox = document.createElement("span");
+        colorBox.style.display = "inline-block";
+        colorBox.style.width = "16px";
+        colorBox.style.height = "16px";
+        colorBox.style.backgroundColor = item.color;
+        colorBox.style.borderRadius = "4px";
+        colorBox.style.border = "1px solid var(--border)";
+        
+        leftWrap.appendChild(colorBox);
+        leftWrap.appendChild(document.createTextNode(`${translateItem(item.category)} (${colorName})`));
+        li.appendChild(leftWrap);
+
+        const delBtn = document.createElement("button");
+        delBtn.className = "delete-btn";
+        delBtn.textContent = "×";
+        delBtn.onclick = () => {
+            wardrobe.splice(index, 1);
+            updateWardrobeList();
+            updateAddItemWardrobeList();
+            syncPoolWithWardrobe();
+        };
+        li.appendChild(delBtn);
+        ul.appendChild(li);
+    });
+}
+
+function generateProductPool() {
+    const poolDiv = document.getElementById("productPool");
+    poolDiv.innerHTML = "";
+    initialProducts.forEach(prod => {
+        const div = document.createElement("div");
+        div.className = "pool-item";
+        div.innerHTML = `
+            <div class="pool-top">
+                <input type="checkbox" class="selectProd">
+                <span>${translateItem(prod)}</span>
+            </div>
+            <div class="color-container" style="display:none;">
+                <span>${translations[currentLang].color_label}</span>
+                <div class="custom-color-picker-wrapper">
+                    <input type="color" class="color1" value="#000000">
+                    <div class="custom-color-picker" style="width:36px;height:26px;border:1px solid var(--border);border-radius:6px;background:#000000;cursor:pointer;"></div>
+                </div>
+                <button class="addColorBtn" title="+">+</button>
+            </div>`;
+        poolDiv.appendChild(div);
+    });
+
+    document.querySelectorAll(".selectProd").forEach(chk => {
+        chk.addEventListener("change", function() {
+            const poolItem = this.closest(".pool-item");
+            const colorsDiv = poolItem.querySelector(".color-container");
+            if (this.checked) {
+                colorsDiv.style.display = "flex";
+                const colorInput = colorsDiv.querySelector(".color1");
+                addFromPool(poolItem, colorInput.value);
+            } else {
+                colorsDiv.style.display = "none";
+                removeFromPool(poolItem);
+            }
+        });
+    });
+
+    poolDiv.onclick = function(e) {
+        if (e.target.classList.contains("addColorBtn")) {
+            e.stopPropagation();
+            const poolItem = e.target.closest(".pool-item");
+            const colorsDiv = e.target.parentElement;
+            
+            const newWrapper = document.createElement("div");
+            newWrapper.className = "custom-color-picker-wrapper";
+            newWrapper.innerHTML = `
+                <input type="color" class="color1" value="#6366f1">
+                <div class="custom-color-picker" style="width:36px;height:26px;border:1px solid var(--border);border-radius:6px;background:#6366f1;cursor:pointer;"></div>
+            `;
+            colorsDiv.insertBefore(newWrapper, e.target);
+            addFromPool(poolItem, "#6366f1");
+        }
+    };
+
+    poolDiv.oninput = function(e) {
+        if (e.target.classList.contains("color1")) {
+            const poolItem = e.target.closest(".pool-item");
+            const colorPickerBox = e.target.nextElementSibling;
+            colorPickerBox.style.backgroundColor = e.target.value;
+            const newColor = e.target.value;
+            const oldColor = e.target.dataset.oldColor || "";
+            
+            if (oldColor && oldColor !== newColor) {
+                removeFromPool(poolItem, oldColor);
+            }
+            addFromPool(poolItem, newColor);
+            e.target.dataset.oldColor = newColor;
+        }
+    };
+}
+
+function addFromPool(poolItem, specificColor) {
+    const prodSpan = poolItem.querySelector("span").textContent;
+    const untranslatedProd = initialProducts.find(p => translateItem(p) === prodSpan) || initialProducts[0];
+    if (!wardrobe.some(i => i.category === untranslatedProd && i.color === specificColor)) {
+        wardrobe.push({ category: untranslatedProd, color: specificColor });
+    }
+    updateWardrobeList();
+    updateAddItemWardrobeList();
+}
+
+function removeFromPool(poolItem, specificColor = null) {
+    const prodSpan = poolItem.querySelector("span").textContent;
+    const untranslatedProd = initialProducts.find(p => translateItem(p) === prodSpan);
+    if (specificColor) {
+        wardrobe = wardrobe.filter(item => !(item.category === untranslatedProd && item.color === specificColor));
+    } else {
+        wardrobe = wardrobe.filter(item => item.category !== untranslatedProd);
+    }
+    updateWardrobeList();
+    updateAddItemWardrobeList();
+}
+
+function updateWardrobeList() {
+    const ul = document.getElementById("wardrobeList");
+    ul.innerHTML = "";
+    if(wardrobe.length === 0) {
+        ul.innerHTML = `<li style="justify-content:center; color:var(--text-muted);">${translations[currentLang].empty_wardrobe}</li>`;
+        return;
+    }
+    wardrobe.forEach((item, index) => {
+        const colorName = getColorName(item.color);
+        const li = document.createElement("li");
+        
+        const leftWrap = document.createElement("div");
+        leftWrap.style.display = "flex";
+        leftWrap.style.alignItems = "center";
+        leftWrap.style.gap = "10px";
+
+        const colorBox = document.createElement("span");
+        colorBox.style.display = "inline-block";
+        colorBox.style.width = "18px";
+        colorBox.style.height = "18px";
+        colorBox.style.backgroundColor = item.color;
+        colorBox.style.borderRadius = "4px";
+        colorBox.style.border = "1px solid var(--border)";
+
+        leftWrap.appendChild(colorBox);
+        leftWrap.appendChild(document.createTextNode(`${translateItem(item.category)} — ${colorName}`));
+        li.appendChild(leftWrap);
+
+        const delBtn = document.createElement("button");
+        delBtn.className = "delete-btn";
+        delBtn.textContent = "×";
+        delBtn.onclick = () => {
+            wardrobe.splice(index, 1);
+            updateWardrobeList();
+            updateAddItemWardrobeList();
+            syncPoolWithWardrobe();
+        };
+        li.appendChild(delBtn);
+        ul.appendChild(li);
+    });
+}
+
+function syncPoolWithWardrobe() {
+    const poolItems = document.querySelectorAll("#productPool .pool-item");
+    poolItems.forEach(poolItem => {
+        const prodSpan = poolItem.querySelector("span").textContent;
+        const untranslatedProd = initialProducts.find(p => translateItem(p) === prodSpan);
+        if (!untranslatedProd) return;
+        const checkbox = poolItem.querySelector(".selectProd");
+        const colorsDiv = poolItem.querySelector(".color-container");
+        const matchingItems = wardrobe.filter(i => i.category === untranslatedProd);
+        
+        if (matchingItems.length === 0) {
+            checkbox.checked = false;
+            colorsDiv.style.display = "none";
+        } else {
+            checkbox.checked = true;
+            colorsDiv.style.display = "flex";
+            const wrappers = colorsDiv.querySelectorAll(".custom-color-picker-wrapper");
+            wrappers.forEach(w => w.remove());
+            matchingItems.forEach(item => {
+                const newWrapper = document.createElement("div");
+                newWrapper.className = "custom-color-picker-wrapper";
+                newWrapper.innerHTML = `
+                    <input type="color" class="color1" value="${item.color}" data-old-color="${item.color}">
+                    <div class="custom-color-picker" style="width:36px;height:26px;border:1px solid var(--border);border-radius:6px;background:${item.color};cursor:pointer;"></div>
+                `;
+                colorsDiv.insertBefore(newWrapper, colorsDiv.querySelector(".addColorBtn"));
+            });
+        }
+    });
+}
+
+document.getElementById("profileList").addEventListener("change", function() {
+    const name = this.value;
+    document.getElementById("addItemBtn").style.display = name ? "inline-block" : "none";
+    if (!name) {
+        document.getElementById("ten").value = "";
+        document.getElementById("sac").value = "";
+        document.getElementById("boy").value = "";
+        document.getElementById("gun").value = "";
+        document.getElementById("hava").value = "";
+        wardrobe = [];
+        updateWardrobeList();
+        updateAddItemWardrobeList();
+        syncPoolWithWardrobe();
+        return;
+    }
+    const data = profiles[name];
+    if(data) {
+        document.getElementById("ten").value = data.ten || "";
+        document.getElementById("sac").value = data.sac || "";
+        document.getElementById("boy").value = data.boy || "";
+        document.getElementById("gun").value = data.yer || "";
+        document.getElementById("hava").value = data.hava || "";
+        wardrobe = data.wardrobe ? [...data.wardrobe] : [];
+        updateWardrobeList();
+        updateAddItemWardrobeList();
+        syncPoolWithWardrobe();
+    }
+    document.getElementById("addItemSection").style.display = "none";
+});
+
+function showSaveProfileModal() {
+    document.getElementById("profileNameModal").style.display = "flex";
+    document.getElementById('profileInput').focus();
+}
+
+function cancelProfileSave() {
+    document.getElementById("profileNameModal").style.display = "none";
+}
+
+function confirmProfileSave() {
+    const name = document.getElementById("profileInput").value.trim();
+    if (!name) return alert(translations[currentLang].alert_name_required);
+    profiles[name] = {
+        ten: document.getElementById("ten").value,
+        sac: document.getElementById("sac").value,
+        boy: document.getElementById("boy").value,
+        yer: document.getElementById("gun").value,
+        hava: document.getElementById("hava").value,
+        wardrobe: wardrobe
+    };
+    updateProfileList();
+    document.getElementById("profileList").value = name;
+    document.getElementById("profileNameModal").style.display = "none";
+    alert(`${name} ${translations[currentLang].alert_profile_saved}`);
+}
+
+const destinationRules = {
+    'İş görüşmesi': ['Ayakkabı - Spor', 'Aksesuar - Şapka'],
+    'Gece Eğlencesi': ['Ayakkabı - Spor', 'Dış Giyim - Mont'],
+    'Markete gitme': ['Ayakkabı - Topuklu', 'Aksesuar - Kolye', 'Aksesuar - Bilezik'],
+    'Sevgili buluşması': ['Ayakkabı - Bot'],
+    'Arkadaşlarla dışarı çıkma': ['Ayakkabı - Topuklu'],
+    'Job interview': ['Ayakkabı - Spor', 'Aksesuar - Şapka'],
+    'Night out': ['Ayakkabı - Spor', 'Dış Giyim - Mont'],
+    'Market': ['Ayakkabı - Topuklu', 'Aksesuar - Kolye', 'Aksesuar - Bilezik'],
+    'Date night': ['Ayakkabı - Bot'],
+    'Going out with friends': ['Ayakkabı - Topuklu'],
+    'Vorstellungsgespräch': ['Ayakkabı - Spor', 'Aksesuar - Şapka'],
+    'Party': ['Ayakkabı - Spor', 'Dış Giyim - Mont'],
+    'Verabredung': ['Ayakkabı - Bot'],
+    'Freunde': ['Ayakkabı - Topuklu']
+};
+
+function getCategoryAndSubcategory(item) {
+    const [category, subCategory] = item.category.split(' - ');
+    return { category: category, subCategory: subCategory };
+}
+
+function calculateColorHarmonyScore(color1, color2) {
+    if (!color1 || !color2) return 0.5;
+    if (color1 === color2) return 0.8;
+    if (color1 === '#000000' || color2 === '#000000' || color1 === '#ffffff' || color2 === '#ffffff') return 1.0;
+    return 0.7;
+}
+
+function kombinOner() {
+    const yer = document.getElementById("gun").value;
+    const hava = document.getElementById("hava").value;
+    const ten = document.getElementById("ten").value;
+    const sac = document.getElementById("sac").value;
+    const boy = document.getElementById("boy").value;
+    
+    let resultDiv = document.getElementById("sonuc");
+    resultDiv.innerHTML = "";
+
+    if (!yer) return alert(translations[currentLang].alert_no_destination);
+    if (!hava) return alert(translations[currentLang].alert_no_weather);
+
+    const hasTopOrDress = wardrobe.some(i => getCategoryAndSubcategory(i).category === 'Üst' || getCategoryAndSubcategory(i).category === 'Elbise');
+    const hasBottom = wardrobe.some(i => getCategoryAndSubcategory(i).category === 'Alt');
+    const hasShoe = wardrobe.some(i => getCategoryAndSubcategory(i).category === 'Ayakkabı');
+
+    if (!hasTopOrDress || !hasBottom || !hasShoe) {
+        return alert(translations[currentLang].alert_no_items);
+    }
+
+    const restrictedItems = destinationRules[yer] || [];
+    let validWardrobe = wardrobe.filter(i => !restrictedItems.includes(i.category));
+
+    let isForcedSelection = false;
+    if (validWardrobe.filter(i => getCategoryAndSubcategory(i).category === 'Ayakkabı').length === 0) {
+        validWardrobe = [...wardrobe];
+        isForcedSelection = true;
+    }
+
+    const tops = validWardrobe.filter(i => getCategoryAndSubcategory(i).category === 'Üst');
+    const bottoms = validWardrobe.filter(i => getCategoryAndSubcategory(i).category === 'Alt');
+    const dresses = validWardrobe.filter(i => getCategoryAndSubcategory(i).category === 'Elbise');
+    const outerwear = validWardrobe.filter(i => getCategoryAndSubcategory(i).category === 'Dış Giyim');
+    const shoes = validWardrobe.filter(i => getCategoryAndSubcategory(i).category === 'Ayakkabı');
+    const accessories = validWardrobe.filter(i => getCategoryAndSubcategory(i).category === 'Aksesuar');
+
+    const t = translations[currentLang];
+    const templates = t.analysis_templates;
+    const selectedDestinationText = document.getElementById("gun").options[document.getElementById("gun").selectedIndex].text;
+    
+    let baseAnalysis = templates[Math.floor(Math.random() * templates.length)].replace('{yer}', selectedDestinationText);
+
+    if (t.weather_notes[hava]) {
+        baseAnalysis += t.weather_notes[hava];
+    }
+
+    if (ten && sac) {
+        if (currentLang === 'tr') {
+            baseAnalysis += ` Ayrıca **${ten} ten rengin** ve **${sac} saç tonunla** muazzam bir kontrast oluşturan renk uyumu gözetildi.`;
+        } else if (currentLang === 'en') {
+            baseAnalysis += ` Also, color harmony creating a superb contrast with your **${ten} skin** and **${sac} hair** tone was considered.`;
+        } else {
+            baseAnalysis += ` Zudem wurde auf Farbharmonie geachtet, die mit Ihrer **${ten} Haut** und Ihrem **${sac} Haar** einen tollen Kontrast bildet.`;
+        }
+    }
+    if (boy) {
+        if (currentLang === 'tr') {
+            baseAnalysis += ` Boy ölçün olan **${boy}** aralığına en uygun silüet ve kesimler baz alındı.`;
+        } else if (currentLang === 'en') {
+            baseAnalysis += ` Silhouettes and cuts best matching your height range of **${boy}** were based.`;
+        } else {
+            baseAnalysis += ` Silhouette und Schnitte, die am besten zu Ihrer Körpergröße von **${boy}** passen, wurden zugrunde gelegt.`;
+        }
+    }
+
+    const analysisBox = document.createElement("div");
+    analysisBox.className = "analysis-box";
+    analysisBox.innerHTML = baseAnalysis;
+    resultDiv.appendChild(analysisBox);
+
+    let generatedOutfits = [];
+
+    for (let attempt = 0; attempt < 5; attempt++) {
+        let currentOutfit = [];
+        let score = 1.0;
+
+        let useDress = dresses.length > 0 && Math.random() > 0.5;
+        if (useDress) {
+            let dress = dresses[Math.floor(Math.random() * dresses.length)];
+            currentOutfit.push(dress);
+        } else if (tops.length > 0 && bottoms.length > 0) {
+            let top = tops[Math.floor(Math.random() * tops.length)];
+            let bottom = bottoms[Math.floor(Math.random() * bottoms.length)];
+            score *= calculateColorHarmonyScore(top.color, bottom.color);
+            currentOutfit.push(top);
+            currentOutfit.push(bottom);
+        } else if (dresses.length > 0) {
+            let dress = dresses[Math.floor(Math.random() * dresses.length)];
+            currentOutfit.push(dress);
+        } else {
+            break;
+        }
+
+        if (shoes.length > 0) {
+            let shoe = shoes[Math.floor(Math.random() * shoes.length)];
+            currentOutfit.push(shoe);
+        } else {
+            break;
+        }
+
+        if (['Serin', 'Cool', 'Kühl'].includes(hava)) {
+            if (outerwear.length > 0 && Math.random() > 0.3) {
+                let coat = outerwear[Math.floor(Math.random() * outerwear.length)];
+                currentOutfit.push(coat);
+            }
+        }
+
+        if (accessories.length > 0 && Math.random() > 0.4) {
+            let acc = accessories[Math.floor(Math.random() * accessories.length)];
+            currentOutfit.push(acc);
+        }
+
+        let outfitString = currentOutfit.map(it => `${getColorName(it.color)} ${translateItem(it.category).split(' - ')[1] || translateItem(it.category)}`).join(' + ');
+        
+        if (score >= 0.6 && !generatedOutfits.includes(outfitString)) {
+            generatedOutfits.push(outfitString);
+        }
+        if (generatedOutfits.length >= 3) break;
+    }
+
+    if (generatedOutfits.length === 0) {
+        resultDiv.innerHTML += `<div class='combination' style="border-left-color: #ef4444;">${translations[currentLang].no_suggestion_found}</div>`;
+        return;
+    }
+
+    generatedOutfits.forEach((outfit, index) => {
+        const cardWrapper = document.createElement("div");
+        cardWrapper.className = "outfit-card-wrapper";
+
+        const card = document.createElement("div");
+        card.className = "outfit-result-card";
+        card.innerHTML = `<span style="font-size:0.85em; display:block; color:var(--text-muted); margin-bottom:4px;">${t.alternative} ${index + 1}</span> ${outfit}`;
+        cardWrapper.appendChild(card);
+
+        if (isForcedSelection) {
+            let warningText = t.warnings[yer] || t.warnings['default'];
+            const warningDiv = document.createElement("div");
+            warningDiv.className = "outfit-warning-note";
+            warningDiv.innerHTML = warningText;
+            cardWrapper.appendChild(warningDiv);
+        }
+
+        resultDiv.appendChild(cardWrapper);
+    });
+}
+</script>
+</body>
+</html>
+
+ 
